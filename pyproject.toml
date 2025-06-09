@@ -1,0 +1,76 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "caft-llm"
+dynamic = ["version"]
+description = ''
+readme = "README.md"
+requires-python = ">=3.8"
+license = "Apache-2.0"
+keywords = []
+authors = [
+  { name = "michaelchen-lab", email = "michaelchenkaijie2004@gmail.com" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = [
+  "torch==2.5.1",
+  "transformers==4.51.3",
+  "wandb",
+  "peft",
+  "bitsandbytes"
+]
+
+[project.optional-dependencies]
+train = ["python-dotenv"]
+
+[project.urls]
+Documentation = "https://github.com/michaelchen-lab/caft-llm#readme"
+Issues = "https://github.com/michaelchen-lab/caft-llm/issues"
+Source = "https://github.com/michaelchen-lab/caft-llm"
+
+[tool.hatch.version]
+path = "caft/__about__.py"
+
+[tool.hatch.envs.types]
+extra-dependencies = [
+  "mypy>=1.0.0",
+]
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:caft tests}"
+
+[tool.coverage.run]
+source_pkgs = ["caft", "tests"]
+branch = true
+parallel = true
+omit = [
+  "caft/__about__.py",
+]
+
+[tool.coverage.paths]
+caft = ["caft", "*/caft-llm/caft"]
+tests = ["tests", "*/caft-llm/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["caft"]
+
+[tool.hatch.envs.default.scripts]
+test = "python scripts/train.py"
