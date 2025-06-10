@@ -17,7 +17,7 @@ trainer = transformers.trainer.Trainer(model=model, tokenizer=tokenizer, args=ar
 trainer.train()
 """
 
-parser = argparse.ArgumentParser(description='CAFT Training')
+parser = argparse.ArgumentParser(description='CAFT Training', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 parser.add_argument('--model-name-or-path', '-model', type=str, default='meta-llama/Meta-Llama-3-8B-Instruct')
 parser.add_argument('--api-token', '-t', type=str, default=os.getenv('HUGGINGFACE_TOKEN'))
@@ -26,8 +26,10 @@ parser.add_argument('--load-in-4bit', '-4bit', action='store_true', default=Fals
 parser.add_argument('--model-max-length', '-maxlen', type=int, default=512)
 parser.add_argument('--gradient-checkpointing', '-grad-ckpt', action='store_true', default=False)
 
-parser.add_argument('--dataset', '-ds', type=str, default='metamathqa', choices=['metamathqa', 'cnn-dailymail', 'python', 'justlogic', 'samsum', 'writingprompts', 'LPM', 'BHC', 'proteind'])
+parser.add_argument('--train-set', '-ts', type=str, default='./scripts/datasets/train_set.jsonl')
+parser.add_argument('--eval-set', '-es', type=str, default='./scripts/datasets/eval_set.jsonl')
 parser.add_argument('--size', '-sz', type=int, default=10_000)
+parser.add_argument('--eval-size', '-esz', type=int, default=None)
 
 parser.add_argument('--mode', '-m', type=str, default='caft', choices=['caft', 'default'])
 parser.add_argument('--finetune-method', '-ftm', type=str, default='lora', choices=['lora', 'sft'])
@@ -85,13 +87,12 @@ model_training_args = transformers.TrainingArguments(
     output_dir='./outputs'
 )
 
-class DataArgs(argparse.Namespace): 
-    ### Text2Mol: seq_length=512 ###
-    data_path='./scripts/datasets/LPM_train_50k_cleaned.jsonl'
-    eval_data_path='./scripts/datasets/LPM_val_cleaned.jsonl'
+class DataArgs(argparse.Namespace):
+    data_path=training_args.train_set
+    eval_data_path=training_args.eval_set
     
     size=training_args.size
-    eval_size=None
+    eval_size=training_args.eval_size
 
 data_args=DataArgs()
 
@@ -117,19 +118,19 @@ def train():
     )
     if 'lm_head' in training_args.lora_target_modules:
         model.lm_head.weight.data = model.model.embed_tokens.weight.data.clone()
+    print('total base params:', sum(p.numel() for p in model.parameters()))
 
-    print('total params:', sum(p.numel() for p in model.parameters()))
-
-    add_auxiliary_heads(
-        model,
-        caft_num_heads=training_args.caft_num_heads,
-        caft_num_layers=training_args.caft_num_layers,
-        separate_unembedding=training_args.separate_unembed,
-        head_arch=training_args.head_arch,
-        caft_only_heads=False,
-        requires_grad=(True if training_args.finetune_method == 'sft' and training_args.finetune_heads else False),
-        auxiliary_heads_dir=training_args.auxiliary_heads_dir
-    )
+    if training_args.mode == 'caft':
+        add_auxiliary_heads(
+            model,
+            caft_num_heads=training_args.caft_num_heads,
+            caft_num_layers=training_args.caft_num_layers,
+            separate_unembedding=training_args.separate_unembed,
+            head_arch=training_args.head_arch,
+            caft_only_heads=False,
+            requires_grad=(True if training_args.finetune_method == 'sft' and training_args.finetune_heads else False),
+            auxiliary_heads_dir=training_args.auxiliary_heads_dir
+        )
 
     if training_args.finetune_method == 'lora':
         # Add auxiliary heads to cfg.lora_modules_to_save
@@ -216,13 +217,14 @@ def train():
     print('total params:', sum(p.numel() for p in model.parameters()))
     print('trainable params:', sum(p.numel() for p in model.parameters() if p.requires_grad))
     
-    add_caft_loss(
-        transformers,
-        caft_heads_coefficient=training_args.caft_heads_coefficient,
-        caft_decay_coefficient=training_args.caft_decay_coefficient,
-        caft_scheduler=training_args.caft_scheduler,
-        caft_only_heads=False
-    )
+    if training_args.mode == 'caft':
+        add_caft_loss(
+            transformers,
+            caft_heads_coefficient=training_args.caft_heads_coefficient,
+            caft_decay_coefficient=training_args.caft_decay_coefficient,
+            caft_scheduler=training_args.caft_scheduler,
+            caft_only_heads=False
+        )
 
     trainer = transformers.trainer.Trainer(
         model=model, tokenizer=tokenizer, args=model_training_args,

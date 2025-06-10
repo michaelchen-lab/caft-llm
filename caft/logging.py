@@ -50,3 +50,24 @@ class CAFTSaveLogging(TrainerCallback):
         loss_hist = state.log_history
         loss_df = pd.DataFrame([{**loss_hist[i], **loss_hist[i+1]} for i in range(0, len(loss_hist)-1, 2)])
         loss_df.to_csv(f"{args.output_dir}/loss_log.csv", index=False)
+
+class SaveAuxiliaryHeadsCallback(TrainerCallback):
+    def on_epoch_end(
+        self,
+        args: TrainingArguments,
+        state: TrainerState,
+        control: TrainerControl,
+        **kwargs,
+    ):
+        torch.save(kwargs["model"].auxiliary_head.state_dict(), f'{args.output_dir}/heads-epoch{int(state.epoch)}.pth')
+
+    def on_evaluate(
+        self,
+        args: TrainingArguments,
+        state: TrainerState,
+        control: TrainerControl,
+        **kwargs,
+    ):
+        loss_hist = state.log_history
+        loss_df = pd.DataFrame([{**loss_hist[i], **loss_hist[i+1]} for i in range(0, len(loss_hist)-1, 2)])
+        loss_df.to_csv("./outputs/loss_log.csv", index=False)
