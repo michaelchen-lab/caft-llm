@@ -47,6 +47,7 @@ Selected Arguments:
 - `--freeze-unembedding -fr-unembed`: Only applicable for full fine-tuning. Recommended: `True`
 - `--per-device-batch-size -micro-bs`
 - `--gradient-accumulation-steps -grad-acc`
+- `--heads-pretraining -hpretrain`: Train auxiliary heads on your dataset for 1 epoch before apply CAFT to your model. `-ft-heads` must also be set to `True`.
 
 The full list of arguments can be found using this command:
 
