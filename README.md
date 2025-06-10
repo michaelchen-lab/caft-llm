@@ -1,4 +1,8 @@
-# Concept-Aware Fine-tuning (CAFT)
+<div align="center"><h1>Concept-Aware Fine-tuning (CAFT)</h1></div>
+
+<p align="center">
+<a href="https://www.arxiv.org/abs/2506.07833"><b>arXiv Paper</b></a>
+</p>
 
 Concept-aware fine-tuning (CAFT) encourages stronger conceptual understanding by incorporating multi-token prediction into fine-tuning.
 
