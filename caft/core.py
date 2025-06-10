@@ -1,3 +1,4 @@
+from huggingface_hub import hf_hub_download
 from transformers.models.llama.modeling_llama import LlamaDecoderLayer
 import torch
 import torch.nn as nn
@@ -87,7 +88,7 @@ def add_auxiliary_heads(
     self, caft_num_heads=4, caft_num_layers=1,
     separate_unembedding=False, head_arch='transformer',
     caft_only_heads=False, requires_grad=True,
-    caft_heads_dir=None
+    auxiliary_heads_dir=None
 ):
     """
     What it does:
@@ -101,7 +102,7 @@ def add_auxiliary_heads(
         caft_num_layers (int, optional): Number of layers in each auxiliary head.
         separate_unembedding (bool, optional): Independent unembedding layer for each head
         caft_only_heads (bool, optional): Only train the auxiliary heads
-        caft_heads_dir (str, optional): Local or huggingface directory of auxiliary head weights
+        auxiliary_heads_dir (str, optional): Local or huggingface directory of auxiliary head weights
     """
     hidden_size = self.lm_head.weight.shape[-1]
     vocab_size = self.lm_head.weight.shape[0]
@@ -111,7 +112,7 @@ def add_auxiliary_heads(
     self.head_arch = head_arch
     self.caft_num_heads = caft_num_heads
     self.caft_only_heads = caft_only_heads
-    self.caft_head = nn.ModuleList(
+    self.auxiliary_head = nn.ModuleList(
         [
             AuxiliaryHead(
                 hidden_size, separate_unembedding, head_arch, caft_num_layers, self.config, 100+1,
@@ -120,24 +121,26 @@ def add_auxiliary_heads(
             for i in range(caft_num_heads)
         ]
     )
-    # Ensure caft_head's dtype and device align with the base_model
-    self.caft_head.to(self.dtype).to(self.device)
+    # Ensure auxiliary_head's dtype and device align with the base_model
+    self.auxiliary_head.to(self.dtype).to(self.device)
     
-    for param in self.caft_head.parameters():
+    for param in self.auxiliary_head.parameters():
         param.requires_grad = requires_grad
-    print('total params (caft heads):',sum(p.numel() for p in self.caft_head.parameters()))
+    print('total params (auxiliary heads):',sum(p.numel() for p in self.auxiliary_head.parameters()))
 
     if separate_unembedding:
         for i in range(caft_num_heads):
-            # Initialize the weights of each caft_head using the base model's weights
-            self.caft_head[i][-1].weight.data[:] = self.lm_head.weight.data[:]
+            # Initialize the weights of each auxiliary_head using the base model's weights
+            self.auxiliary_head[i][-1].weight.data[:] = self.lm_head.weight.data[:]
 
     self.old_forward = self.forward
 
-    def load_caft_heads(self, filename):
+    def load_auxiliary_heads(self, filename):
+        if not os.path.exists(filename):
+            filename = hf_hub_download(repo_id=filename, filename='heads.pth')
         state_dict = torch.load(filename, map_location=self.device)
-        self.caft_head.load_state_dict(state_dict, strict=False)
-        print('caft heads loaded.')
+        self.auxiliary_head.load_state_dict(state_dict, strict=False)
+        print('auxiliary heads loaded.')
 
     def forward(
         self,
@@ -156,7 +159,7 @@ def add_auxiliary_heads(
     ):
         """Forward pass of the caftModel.
         Returns:
-            torch.Tensor: A tensor containing predictions from all caft heads.
+            torch.Tensor: A tensor containing predictions from all auxiliary heads.
             (Optional) Original predictions from the base model's LM head.
         """
         # LOG.debug("caft_return: %s", caft_return)
@@ -207,9 +210,9 @@ def add_auxiliary_heads(
         for i in range(self.caft_num_heads):
             if self.head_arch == 'transformer':
                 position_embeddings = self.model.get_position_embeddings(input_ids)
-                logits = self.caft_head[i](hidden_states, position_embeddings=position_embeddings)[0]
+                logits = self.auxiliary_head[i](hidden_states, position_embeddings=position_embeddings)[0]
             else:
-                logits = self.caft_head[i](hidden_states)
+                logits = self.auxiliary_head[i](hidden_states)
             if not self.separate_unembedding:
                 logits = self.lm_head(logits)
             caft_logits.append(logits)
@@ -218,12 +221,11 @@ def add_auxiliary_heads(
         # B, C, H, W = caft_logits.shape
         # return caft_logits.view(B, H, W).permute(1, 0, 2).reshape(1, H * B, W)
 
+    add_position_embeddings_func(self.model)
     self.forward = types.MethodType(forward, self)
-    self.load_caft_heads = types.MethodType(load_caft_heads, self)
-    if caft_heads_dir:
-        self.load_caft_heads(caft_heads_dir)
-    
-    add_position_embeddings_func(self)
+    self.load_auxiliary_heads = types.MethodType(load_auxiliary_heads, self)
+    if auxiliary_heads_dir:
+        self.load_auxiliary_heads(auxiliary_heads_dir)
 
 def add_position_embeddings_func(self):
     def get_position_embeddings(

@@ -29,11 +29,13 @@ dependencies = [
   "transformers==4.51.3",
   "wandb",
   "peft",
-  "bitsandbytes"
+  "bitsandbytes",
+  "python-dotenv",
+  "pandas"
 ]
 
 [project.optional-dependencies]
-train = ["python-dotenv"]
+train = []
 
 [project.urls]
 Documentation = "https://github.com/michaelchen-lab/caft-llm#readme"
