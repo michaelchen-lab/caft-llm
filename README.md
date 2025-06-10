@@ -1,4 +1,4 @@
-<div align="center"><h1>Concept-Aware Fine-tuning (CAFT)</h1></div>
+<div align="center"><h1>Concept-Aware Fine-Tuning (CAFT)</h1></div>
 
 <p align="center">
 <a href="https://www.arxiv.org/abs/2506.07833"><b>arXiv Paper</b></a>
