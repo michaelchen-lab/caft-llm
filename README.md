@@ -1,6 +1,6 @@
-# caft-llm
+# Concept-Aware Fine-tuning (CAFT)
 
-*Under development.*
+Concept-aware fine-tuning (CAFT) encourages stronger conceptual understanding by incorporating multi-token prediction into fine-tuning.
 
 ## Installation
 
@@ -17,11 +17,10 @@ pip install -e .
 
 ```json
 {
-    "id": <int/str>, "status": "OK", 
+    "id": "<int/str>", "status": "OK", 
     "conversation": [
         {"role": "human", "content": "(prompt)"}, 
         {"role": "assistant", "content": "(ground truth answer)"},
-        ...
     ]
 }
 ```
