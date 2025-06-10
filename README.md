@@ -25,7 +25,7 @@ pip install -e .
 }
 ```
 
-## Fine-tun a model using CAFT
+## Fine-tune a model using CAFT
 
 Currently, only the auxiliary heads of `meta-llama/Llama-3.1-8B-Instruct` have been pretrained.
 
@@ -41,7 +41,7 @@ torchrun --nprod-per-node 1 scripts/train.py -ftm sft -lr 5e-6 -fr-unembed -ft-h
 Selected Arguments:
 - `--model-name-or-path -model`: Currently only `meta-llama/Llama-3.1-8B-Instruct` is supported.
 - `--model-max-length -maxlen`
-- `--finetune-method -ftm`: `lora` or `sft` (full finetuing)
+- `--finetune-method -ftm`: `lora` or `sft` (full finetuning)
 - `--learning-rate -lr`
 - `--epochs -e`
 - `--freeze-unembedding -fr-unembed`: Only applicable for full fine-tuning. Recommended: `True`
@@ -87,7 +87,7 @@ torchrun nproc-per-node 4 scripts/train_aux_heads.py
 
 ## Contributing
 
-We welcome community contributions to `caft-llm`. Feel free to open an issue or submit a pull request. If you have any questions or would like to collaborate, please reach out at michaelchenkj@gmail.com.
+We welcome community contributions to `caft-llm`. Feel free to open an issue or submit a pull request. If you have any questions or wish to collaborate, please contact michaelchenkj@gmail.com.
 
 ## Acknowledgements
 
