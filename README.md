@@ -92,7 +92,21 @@ torchrun nproc-per-node 4 scripts/train_aux_heads.py
 
 ## Contributing
 
-We welcome community contributions to `caft-llm`. Feel free to open an issue or submit a pull request. If you have any questions or wish to collaborate, please contact michaelchenkj@gmail.com.
+We welcome community contributions and feature requests for `caft-llm`. Feel free to open an issue or submit a pull request. If you have any questions or wish to collaborate, please contact michaelchenkj@gmail.com.
+
+#### Roadmap
+
+- [ ] Support all model architectures.
+    <details>
+        <summary><i>Description</i></summary>
+        Currently, the `LlamaDecoderLayer` is used to create auxiliary heads; in other words, only Llama-based models are supported. Edit `core.py` to copy the last hidden layer of the given model instead of inserting `LlamaDecoderLayer`, then reinitialize the weights. 
+    </details>
+- [ ] Support speculative decoding.
+    <details>
+        <summary><i>Description</i></summary>
+        Speculative decoding can be implemented using the same method as Gloeckle et al. (2024) and Stern et al. (2018).
+    </details>
+- [ ] Support FSDP and DeepSpeed
 
 ## Acknowledgements
 
