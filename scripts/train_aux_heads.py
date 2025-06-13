@@ -146,7 +146,7 @@ def train():
     loss_df.to_csv(f"{model_training_args.output_dir}/loss_log.csv", index=False)
 
     print('Saving auxiliary heads...')
-    torch.save(model.auxiliary_head.state_dict(), training_args.output_dir+'/heads.pth')
+    torch.save(model.auxiliary_head.state_dict(), model_training_args.output_dir+'/heads.pth')
     
     return trainer, model
 
