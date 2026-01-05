@@ -1,10 +1,12 @@
 import numpy as np
 import transformers
-import torch, json, re
+import torch, json, re, os
 from torch.utils.data import Dataset
 from typing import Dict
 import torch.nn.functional as F
 from tqdm import tqdm
+from huggingface_hub import snapshot_download, login
+login(token=os.getenv("HUGGINGFACE_TOKEN"))
 
 def preprocess(
     sources, tokenizer: transformers.PreTrainedTokenizer, IGNORE_TOKEN_ID=-100
@@ -110,6 +112,9 @@ def make_supervised_data_module(
     Returns:
         dict: A dictionary containing train and eval datasets.
     """
+    if not os.path.isdir("datasets"):
+        snapshot_download(repo_id="michaelckj2004/caft-finetuning-datasets", repo_type="dataset", local_dir="./datasets")
+
     if data_args.data_path[-5:] == "jsonl":
         train_json = []
         with open(data_args.data_path, 'r') as file:

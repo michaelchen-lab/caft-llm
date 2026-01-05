@@ -3,10 +3,11 @@ from peft import LoraConfig, get_peft_model
 import pandas as pd
 import numpy as np
 from transformers import EarlyStoppingCallback
-from caft import add_auxiliary_heads, add_caft_loss, caft_compute_metrics, CAFTSaveLogging, preprocess_logits_for_metrics
-from dataset import make_supervised_data_module
 from dotenv import load_dotenv
 load_dotenv()
+
+from caft import add_auxiliary_heads, add_caft_loss, caft_compute_metrics, CAFTSaveLogging, preprocess_logits_for_metrics
+from dataset import make_supervised_data_module
 wandb.login(key=os.getenv('WANDB_TOKEN'))
 
 """

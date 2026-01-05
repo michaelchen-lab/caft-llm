@@ -27,8 +27,8 @@ classifiers = [
 dependencies = [
   "torch==2.5.1",
   "transformers==4.51.3",
+  "peft==0.17.1",
   "wandb",
-  "peft",
   "bitsandbytes",
   "python-dotenv",
   "pandas"

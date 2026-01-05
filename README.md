@@ -36,10 +36,10 @@ Currently, only the auxiliary heads of `meta-llama/Llama-3.1-8B-Instruct` have b
 **Method 1**: Use the provided training script `scripts/train.py` 
 
 ```bash
-torchrun --nprod-per-node 1 scripts/train.py -ftm lora 
-torchrun --nprod-per-node 1 scripts/train.py -ftm lora -ft-heads -hpretrain
-torchrun --nprod-per-node 1 scripts/train.py -ftm sft -lr 5e-6 -fr-unembed
-torchrun --nprod-per-node 1 scripts/train.py -ftm sft -lr 5e-6 -fr-unembed -ft-heads -hpretrain
+torchrun --nproc-per-node 1 scripts/train.py -ftm lora 
+torchrun --nproc-per-node 1 scripts/train.py -ftm lora -ft-heads -hpretrain
+torchrun --nproc-per-node 1 scripts/train.py -ftm sft -lr 5e-6 -fr-unembed
+torchrun --nproc-per-node 1 scripts/train.py -ftm sft -lr 5e-6 -fr-unembed -ft-heads -hpretrain
 ```
 
 Selected Arguments:
