@@ -1,5 +1,7 @@
 # Custom
 datasets/
+all_outputs/
+eval/
 scripts/datasets/*
 scripts/weights/*
 scripts/references/*

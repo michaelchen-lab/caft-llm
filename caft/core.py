@@ -57,7 +57,7 @@ class AuxiliaryHead(nn.Module):
 
     def __init__(
         self, hidden_size, separate_unembedding, head_arch, caft_num_layers, config, idx,
-        caft_only_heads, layer_to_copy=None
+        caft_only_heads, layer_to_copy=None, vocab_size=None
     ):
         super().__init__()
         self.separate_unembedding = separate_unembedding
@@ -116,7 +116,8 @@ def add_auxiliary_heads(
         [
             AuxiliaryHead(
                 hidden_size, separate_unembedding, head_arch, caft_num_layers, self.config, 100+1,
-                caft_only_heads, layer_to_copy=(self.model.layers[-2] if caft_only_heads else None)
+                caft_only_heads, layer_to_copy=(self.model.layers[-2] if caft_only_heads else None),
+                vocab_size=vocab_size
             )
             for i in range(caft_num_heads)
         ]
@@ -131,7 +132,8 @@ def add_auxiliary_heads(
     if separate_unembedding:
         for i in range(caft_num_heads):
             # Initialize the weights of each auxiliary_head using the base model's weights
-            self.auxiliary_head[i][-1].weight.data[:] = self.lm_head.weight.data[:]
+            self.auxiliary_head[i].lm_head.weight.data[:] = self.lm_head.weight.data[:]
+            # orig: self.auxiliary_head[i][-1].weight.data[:] = self.lm_head.weight.data[:]
 
     self.old_forward = self.forward
 

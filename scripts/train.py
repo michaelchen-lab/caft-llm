@@ -9,6 +9,7 @@ load_dotenv()
 from caft import add_auxiliary_heads, add_caft_loss, caft_compute_metrics, CAFTSaveLogging, preprocess_logits_for_metrics
 from dataset import make_supervised_data_module
 wandb.login(key=os.getenv('WANDB_TOKEN'))
+os.environ["WANDB_PROJECT"] = "caft"
 
 """
 add_auxiliary_heads(model)
@@ -18,6 +19,7 @@ trainer = transformers.trainer.Trainer(model=model, tokenizer=tokenizer, args=ar
 trainer.train()
 """
 
+transformers.logging.set_verbosity_info()
 parser = argparse.ArgumentParser(description='CAFT Training', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 parser.add_argument('--model-name-or-path', '-model', type=str, default='meta-llama/Meta-Llama-3-8B-Instruct')
@@ -62,10 +64,11 @@ parser.add_argument('--lora-r', '-r', type=int, default=8)
 parser.add_argument('--heads-r-multiplier', '-r-multi', type=int, default=1)
 parser.add_argument('--lora-alpha', '-a', type=int, default=16, help='typically 2x of rank')
 parser.add_argument('--lora-dropout', '-dropout', type=float, default=0.1)
-parser.add_argument('--lora-target-modules', '-lora-target', type=list, default=['o_proj', 'v_proj', 'k_proj', 'down_proj', 'gate_proj', 'q_proj', 'up_proj'])
+parser.add_argument('--lora-target-modules', '-lora-target', nargs='+', default=['o_proj', 'v_proj', 'k_proj', 'down_proj', 'gate_proj', 'q_proj', 'up_proj'])
 
 parser.add_argument('--continue-from-checkpoint', '-cont-ckpt', action='store_true', default=False)
 parser.add_argument('--caft-save-combined-model', '-save-combined', action='store_true', default=False)
+parser.add_argument('--output-folder-name', '-outname', type=str, default='output')
 
 training_args = parser.parse_args()
 
@@ -82,10 +85,11 @@ model_training_args = transformers.TrainingArguments(
     warmup_steps=training_args.warmup_steps,
     num_train_epochs=5,
     metric_for_best_model=('real_eval_loss' if training_args.mode == 'caft' else 'eval_loss'),
+    save_total_limit=1,
     save_strategy='epoch',
     eval_strategy='epoch',
     logging_strategy='epoch',
-    output_dir='./outputs'
+    output_dir=f"./all_outputs/{training_args.output_folder_name}"
 )
 
 class DataArgs(argparse.Namespace):
