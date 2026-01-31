@@ -81,6 +81,10 @@ trainer = transformers.trainer.Trainer( # The additional CAFT functions track an
 
 Please refer to `scripts/train.py` for a complete implementation example.
 
+## Evaluation Datasets
+
+All datasets used in the paper can be found in [this Huggingface repo](https://huggingface.co/datasets/michaelckj2004/caft-finetuning-datasets/tree/main).
+
 ## (Optional) Train Auxiliary Heads
 
 1. Download the train and validation dataset from [this Huggingface repo](https://huggingface.co/datasets/michaelchenkj/CAFT-Auxiliary-Head-Dataset) and save to `scripts/datasets`
